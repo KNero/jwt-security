@@ -72,6 +72,31 @@ public class JwtSecurityTest {
         JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
 
         Map<String, Object> data = new HashMap<>();
+
+        data.put("role", "ROLE2");
+        String jwt = jwtSecurity.generateToken(data);
+        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access2"));
+
+        data.put("role", "ROLE3");
+        jwt = jwtSecurity.generateToken(data);
+        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access2"));
+
+        try {
+            data.put("role", "ROLE1");
+            jwt = jwtSecurity.generateToken(data);
+            jwtSecurity.authenticate(jwt, new AccessTarget("/path/access2"));
+
+            Assert.fail();
+        } catch (AuthorizationException e) {
+            //expected
+        }
+    }
+
+    @Test
+    public void test_multi_role() throws AuthenticationException, AuthorizationException, AccessInfoExistsException {
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
+
+        Map<String, Object> data = new HashMap<>();
         data.put("name", "1");
         data.put("email", "test@2");
         data.put("role", "rest1");

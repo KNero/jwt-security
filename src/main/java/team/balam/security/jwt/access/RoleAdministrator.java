@@ -48,9 +48,9 @@ public class RoleAdministrator {
     }
 
     private void addNewAccessInfo(AccessTarget target, String... roles) throws AccessInfoExistsException {
-        AccessRole accessRole = accessInfoRepository.get(target);
-
         for (String role : roles) {
+            AccessRole accessRole = accessInfoRepository.get(target);
+
             if (accessRole == null) {
                 accessInfoRepository.put(target, new AccessRole().addRole(role));
             } else if (!accessRole.containsRole(role)) {
