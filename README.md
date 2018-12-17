@@ -34,7 +34,7 @@ dependencies {
 }
 ```
 
-### with spring boot
+## with spring boot
 #### 1. ```team.balam.security.jwt.JwtSecurity``` 의 아래 메소드를 통해서 랜덤 키를 생성하고 config 파일에 저장합니다.
 
 ```java
@@ -58,6 +58,17 @@ public class JwtSecurityFilter implements Filter {
     
     @Value("${jwt.secret}")
     private String jwtSecretKey; // 에 저장한 키 사용
+    
+    /**
+    *  jwt 발급을 위한 method
+    */
+    public static String generateJwtToken(UserDto userDto) {
+        return jwtSecurity.generateToken(userDto); 
+    }
+    
+    public static UserDto getAuthUser() {
+        return jwtSecurity.getAuthenticationInfo();
+    }
     
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -148,7 +159,7 @@ Authorization: Bearer {jwt token}
         chain.doFilter(request, response);
     }
 ```
-jwtSecurity.authenticate 이 method 가 실행될 때 예외를 사용하여 클라이언트에 예외를 전파할 수 있습니다.
+jwtSecurity.authenticate method 가 실행될 때 예외를 사용하여 클라이언트에 예외를 전파할 수 있습니다.
 
 #### 4. spring 에 JwtSecurityFilter 를 등록해 줍니다.
 ```java
@@ -189,3 +200,12 @@ Role.TEACHER 은 String 이고 AuthToken 의 role 이 "teacher" 인 사용자만
 `@MethodAccess`
 `@PathAccess`
 `@RestAccess` 
+
+
+#### 6. 인증이 완료된 사용자에게 jwt 를 발급합니다. (상단의 JwtSecurityFilter 참고)
+```java
+String jwt = JwtSecurityFilter.generateJwtToken(userDto);
+```
+
+   메모리에 저장된 객체를 사용하는 방법은 아래와 같습니다.
+```UserDto user = jwtSecurity.getAuthenticationInfo();```
