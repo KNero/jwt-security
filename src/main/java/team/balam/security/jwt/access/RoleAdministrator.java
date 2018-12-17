@@ -26,27 +26,25 @@ public class RoleAdministrator {
             Set<Method> methodSet = reflections.getMethodsAnnotatedWith(PathAccess.class);
             for (Method m : methodSet) {
                 PathAccess pathAccess = m.getAnnotation(PathAccess.class);
-                addPathAccess(pathAccess.path(), pathAccess.role());
+                addNewAccessInfo(new AccessTarget(pathAccess.path()), pathAccess.role());
             }
 
             methodSet = reflections.getMethodsAnnotatedWith(MethodAccess.class);
             for (Method m: methodSet) {
                 MethodAccess methodAccess = m.getAnnotation(MethodAccess.class);
-                addMethodAccess(m.getDeclaringClass(), m.getName(), methodAccess.role());
+                addNewAccessInfo(new AccessTarget(m.getDeclaringClass(), m.getName()), methodAccess.role());
+            }
+
+            methodSet = reflections.getMethodsAnnotatedWith(RestAccess.class);
+            for (Method m: methodSet) {
+                RestAccess restAccess = m.getAnnotation(RestAccess.class);
+                addNewAccessInfo(new AccessTarget(restAccess.uri(), restAccess.method()), restAccess.role());
             }
         }
     }
 
     public void addAdminRole(String adminRole) {
         this.adminRole.add(adminRole);
-    }
-
-    public void addPathAccess(String path, String... role) throws AccessInfoExistsException {
-        addNewAccessInfo(new AccessTarget(path), role);
-    }
-
-    public void addMethodAccess(Class type, String method, String... role) throws AccessInfoExistsException {
-        addNewAccessInfo(new AccessTarget(type, method), role);
     }
 
     private void addNewAccessInfo(AccessTarget target, String... roles) throws AccessInfoExistsException {

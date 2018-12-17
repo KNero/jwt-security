@@ -25,6 +25,11 @@ public class JwtSecurityTest {
 
     }
 
+    @RestAccess(uri = "/test", method = "get", role = "rest1")
+    public void testGet() {
+
+    }
+
     @Test
     public void test_createSecretKey() {
         Assert.assertEquals(32, JwtSecurity.create32BitesSecretKey().length());
@@ -60,6 +65,24 @@ public class JwtSecurityTest {
         jwt = jwtSecurity.generateToken(data);
 
         jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+    }
+
+    @Test
+    public void test_authentication2() throws AuthenticationException, AuthorizationException, AccessInfoExistsException {
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "1");
+        data.put("email", "test@2");
+        data.put("role", "rest1");
+
+        String jwt = jwtSecurity.generateToken(data);
+
+        jwtSecurity.authenticate(jwt, new AccessTarget("/test", "GET"));
+
+        Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
+        Assert.assertEquals(data.get("name"), jwtData.get("name"));
+        Assert.assertEquals(data.get("email"), jwtData.get("email"));
     }
 
     @Test
