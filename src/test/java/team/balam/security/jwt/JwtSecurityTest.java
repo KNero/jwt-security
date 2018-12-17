@@ -103,13 +103,8 @@ public class JwtSecurityTest {
         data.put("email", "test@test.c");
         data.put("role", "ROLE 1");
 
-        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(false);
         String jwt = jwtSecurity.generateToken(data);
-        System.out.println(jwt);
-        Assert.assertTrue(jwt.contains("-") || jwt.contains("_"));
-
-        jwtSecurity = createJwtSecurity(false);
-        jwt = jwtSecurity.generateToken(data);
         System.out.println(jwt);
         Assert.assertTrue(jwt.contains("="));
     }

@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'net.ltgt.apt' version '0.10'
+    id 'maven-publish'
 }
 
 group 'team.balam'
@@ -10,6 +11,21 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+}
+
+publishing {
+    publications {
+        maven (MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        maven {
+            name = 'jwt-security'
+            url = "file://Volumes/KSM HD/git/repository/maven"
+        }
+    }
 }
 
 dependencies {
