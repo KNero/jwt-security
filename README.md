@@ -28,6 +28,6 @@ repositories {
 ```
 ```gradle
 dependencies {
-    compile group: 'team.balam', name: 'jwt-security', version: '0.0.1'
+    compile 'team.balam:jwt-security:0.0.1'
 }
 ```
