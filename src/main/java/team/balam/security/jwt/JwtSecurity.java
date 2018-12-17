@@ -130,6 +130,11 @@ public class JwtSecurity<T> {
             return this;
         }
 
+        public Builder<T> addAdminRole(String adminRole) {
+            jwtSecurity.roleAdministrator.addAdminRole(adminRole);
+            return this;
+        }
+
         public JwtSecurity<T> build() throws AccessInfoExistsException {
             if (jwtSecurity.secretKey == null) {
                 throw new InitializeException("secretKey is empty");

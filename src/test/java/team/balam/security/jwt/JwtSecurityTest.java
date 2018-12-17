@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import team.balam.security.jwt.access.*;
 
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class JwtSecurityTest {
 
     @Test
     public void test_authentication() throws AuthenticationException, AuthorizationException, AccessInfoExistsException {
-        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(false);
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
 
         Map<String, Object> data = new HashMap<>();
         data.put("name", "NAME_A");
@@ -57,7 +58,26 @@ public class JwtSecurityTest {
 
         data.put("role", "METHOD1");
         jwt = jwtSecurity.generateToken(data);
+
         jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+    }
+
+    @Test
+    public void test_adminRole() throws AuthenticationException, AuthorizationException, AccessInfoExistsException {
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "NAME_A");
+        data.put("email", "test@test.com");
+        data.put("role", "ADMIN");
+
+        String jwt = jwtSecurity.generateToken(data);
+
+        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access1"));
+
+        Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
+        Assert.assertEquals(data.get("name"), jwtData.get("name"));
+        Assert.assertEquals(data.get("email"), jwtData.get("email"));
     }
 
     @Test(expected = AuthorizationException.class)
@@ -109,10 +129,28 @@ public class JwtSecurityTest {
         Assert.assertTrue(jwt.contains("="));
     }
 
+    @Test(expected = AuthenticationException.class)
+    public void test_hackHeader() throws AuthenticationException, AuthorizationException, AccessInfoExistsException {
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "NAME A");
+        data.put("email", "test@test.c");
+        data.put("role", "METHOD1");
+
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(false);
+        String jwt = jwtSecurity.generateToken(data);
+
+        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+
+        String header = "{\"role\":\"METHOD 2222\",\"alg\":\"HS256\"}";
+        jwt = Base64.getEncoder().encodeToString(header.getBytes()) + "." + jwt.split("\\.")[1] + "." + jwt.split("\\.")[2];
+        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+    }
+
     private static JwtSecurity<Map<String, Object>> createJwtSecurity(boolean isUrlSafe) throws AccessInfoExistsException {
         return new JwtSecurity.Builder<Map<String, Object>>()
                 .setPackages("team.balam.security.jwt")
                 .setSecretKey(JwtSecurity.create32BitesSecretKey())
+                .addAdminRole("ADMIN")
                 .setAuthTokenConverter(data -> {
                     Date date = new Date(System.currentTimeMillis() + 10000);
                     return AuthToken.builder()

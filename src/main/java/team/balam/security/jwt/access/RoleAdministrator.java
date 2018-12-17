@@ -8,11 +8,13 @@ import org.reflections.util.FilterBuilder;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class RoleAdministrator {
     private Map<AccessTarget, AccessRole> accessInfoRepository = new HashMap<>();
+    private Set<String> adminRole = new HashSet<>();
 
     public void init(String... packages) throws AccessInfoExistsException {
         for (String p : packages) {
@@ -33,6 +35,10 @@ public class RoleAdministrator {
                 addMethodAccess(m.getDeclaringClass(), m.getName(), methodAccess.role());
             }
         }
+    }
+
+    public void addAdminRole(String adminRole) {
+        this.adminRole.add(adminRole);
     }
 
     public void addPathAccess(String path, String... role) throws AccessInfoExistsException {
@@ -58,8 +64,11 @@ public class RoleAdministrator {
     }
 
     public void checkAuthorization(AccessTarget accessTarget, String role) throws AuthorizationException {
-        AccessRole accessRole = accessInfoRepository.get(accessTarget);
+        if (adminRole.contains(role)) {
+            return;
+        }
 
+        AccessRole accessRole = accessInfoRepository.get(accessTarget);
         if (accessRole != null && !accessRole.containsRole(role)) {
             throw new AuthorizationException("not has access authorization. " + role + " -> " + accessTarget);
         }
