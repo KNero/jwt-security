@@ -5,9 +5,10 @@ plugins {
 }
 
 group 'team.balam'
-version 'v0.0.1'
+version '0.0.1'
 
 sourceCompatibility = 1.8
+targetCompatibility=1.8
 
 repositories {
     mavenCentral()
@@ -16,13 +17,16 @@ repositories {
 publishing {
     publications {
         maven (MavenPublication) {
+            groupId = 'team.balam'
+            artifactId = 'jwt-security'
+            version = '0.0.1'
+
             from components.java
         }
     }
 
     repositories {
         maven {
-            name = 'jwt-security'
             url = "file://Volumes/KSM HD/git/repository/maven"
         }
     }
