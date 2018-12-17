@@ -74,20 +74,24 @@ public class JwtSecurity<T> {
     @SuppressWarnings("unchecked")
     public void authenticate(String jwtString, AccessTarget accessTarget) throws AuthenticationException, AuthorizationException {
         try {
-            JwtParser jwtParser = Jwts.parser().setSigningKey(secretKey);
-            if (!isUrlSafe) {
-                jwtParser.base64UrlDecodeWith(Decoders.BASE64);
+            if (jwtString == null || jwtString.isEmpty()) {
+                roleAdministrator.checkAuthorization(accessTarget, null);
+            } else {
+                JwtParser jwtParser = Jwts.parser().setSigningKey(secretKey);
+                if (!isUrlSafe) {
+                    jwtParser.base64UrlDecodeWith(Decoders.BASE64);
+                }
+
+                Jwt jwt = jwtParser.parse(jwtString);
+
+                AuthToken authToken = AuthToken.builder()
+                        .role((String) jwt.getHeader().get("role"))
+                        .info((Map<String, Object>) jwt.getBody()).build();
+
+                roleAdministrator.checkAuthorization(accessTarget, authToken.getRole());
+
+                authResultRepository.set(objectConverter.apply(authToken));
             }
-
-            Jwt jwt = jwtParser.parse(jwtString);
-
-            AuthToken authToken = AuthToken.builder()
-                    .role((String) jwt.getHeader().get("role"))
-                    .info((Map<String, Object>) jwt.getBody()).build();
-
-            roleAdministrator.checkAuthorization(accessTarget, authToken.getRole());
-
-            authResultRepository.set(objectConverter.apply(authToken));
         } catch (JwtException e) {
             throw new AuthenticationException(e);
         }
