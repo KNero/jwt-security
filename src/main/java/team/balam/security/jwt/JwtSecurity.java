@@ -17,7 +17,7 @@ import java.util.function.Function;
 public class JwtSecurity<T> {
     private Key secretKey;
     private Function<T, AuthToken> authTokenConverter;
-    private Function<AuthToken, T> objectConverter;
+    private ObjectConverter<T> objectConverter;
     private boolean isUrlSafe;
 
     private RoleAdministrator roleAdministrator = new RoleAdministrator();
@@ -90,7 +90,7 @@ public class JwtSecurity<T> {
 
                 roleAdministrator.checkAuthorization(accessTarget, authToken.getRole());
 
-                authResultRepository.set(objectConverter.apply(authToken));
+                authResultRepository.set(objectConverter.convert(authToken));
             }
         } catch (JwtException e) {
             throw new AuthenticationException(e);
@@ -115,7 +115,7 @@ public class JwtSecurity<T> {
             return this;
         }
 
-        public Builder<T> setObjectConverter(Function<AuthToken, T> objectConverter) {
+        public Builder<T> setObjectConverter(ObjectConverter<T> objectConverter) {
             jwtSecurity.objectConverter = objectConverter;
             return this;
         }
