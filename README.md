@@ -57,7 +57,7 @@ public class JwtSecurityFilter implements Filter {
     private static JwtSecurity<UserDto> jwtSecurity;
     
     @Value("${jwt.secret}")
-    private String jwtSecretKey; // 에 저장한 키 사용
+    private String jwtSecretKey; // config 에 저장한 키 사용
     
     /**
     *  jwt 발급을 위한 method
