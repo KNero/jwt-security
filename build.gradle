@@ -19,7 +19,6 @@ publishing {
         maven (MavenPublication) {
             groupId = 'team.balam'
             artifactId = 'jwt-security'
-            version = '0.0.8'
 
             from components.java
         }
