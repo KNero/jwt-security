@@ -1,24 +1,18 @@
 package team.balam.security.jwt;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.io.Encoders;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.JwtException;
 import team.balam.security.jwt.access.AccessInfoExistsException;
 import team.balam.security.jwt.access.AccessTarget;
 import team.balam.security.jwt.access.AuthorizationException;
 import team.balam.security.jwt.access.RoleAdministrator;
 
-import java.security.Key;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
 public class JwtSecurity<T> {
-    private Key secretKey;
+    private JwtTranslator jwtTranslator;
     private Function<T, AuthToken> authTokenConverter;
     private ObjectConverter<T> objectConverter;
-    private boolean isUrlSafe;
 
     private RoleAdministrator roleAdministrator = new RoleAdministrator();
 
@@ -51,24 +45,7 @@ public class JwtSecurity<T> {
 
     public String generateToken(T t) {
         AuthToken authToken = authTokenConverter.apply(t);
-
-        JwtBuilder jwtBuilder = Jwts.builder()
-                .signWith(secretKey)
-                .setClaims(authToken.getInfo());
-
-        if (!isUrlSafe) {
-            jwtBuilder.base64UrlEncodeWith(Encoders.BASE64);
-        }
-
-        if (authToken.getRole() != null) {
-            jwtBuilder.setHeaderParam("role", authToken.getRole());
-        }
-
-        if (authToken.getExpirationTime() != null) {
-            jwtBuilder.setExpiration(authToken.getExpirationTime());
-        }
-
-        return jwtBuilder.compact();
+        return jwtTranslator.generate(authToken);
     }
 
     @SuppressWarnings("unchecked")
@@ -77,16 +54,7 @@ public class JwtSecurity<T> {
             if (jwtString == null || jwtString.isEmpty()) {
                 roleAdministrator.checkAuthorization(accessTarget, null);
             } else {
-                JwtParser jwtParser = Jwts.parser().setSigningKey(secretKey);
-                if (!isUrlSafe) {
-                    jwtParser.base64UrlDecodeWith(Decoders.BASE64);
-                }
-
-                Jwt jwt = jwtParser.parse(jwtString);
-
-                AuthToken authToken = AuthToken.builder()
-                        .role((String) jwt.getHeader().get("role"))
-                        .info((Map<String, Object>) jwt.getBody()).build();
+                AuthToken authToken = jwtTranslator.parse(jwtString);
 
                 roleAdministrator.checkAuthorization(accessTarget, authToken.getRole());
 
@@ -101,12 +69,15 @@ public class JwtSecurity<T> {
         private JwtSecurity<T> jwtSecurity = new JwtSecurity<>();
         private String[] packages;
 
+        private byte[] secretKey;
+        private boolean isUrlSafe;
+
         public Builder<T> setSecretKey(String secretKey) {
             if (secretKey == null || secretKey.isEmpty()) {
                 throw new InitializeException("secretKey is empty");
             }
 
-            jwtSecurity.secretKey = Keys.hmacShaKeyFor(secretKey.getBytes());
+            this.secretKey = secretKey.getBytes();
             return this;
         }
 
@@ -126,7 +97,7 @@ public class JwtSecurity<T> {
         }
 
         public Builder<T> setUrlSafe(boolean isUrlSafe) {
-            jwtSecurity.isUrlSafe = isUrlSafe;
+            this.isUrlSafe = isUrlSafe;
             return this;
         }
 
@@ -136,7 +107,7 @@ public class JwtSecurity<T> {
         }
 
         public JwtSecurity<T> build() throws AccessInfoExistsException {
-            if (jwtSecurity.secretKey == null) {
+            if (this.secretKey == null) {
                 throw new InitializeException("secretKey is empty");
             } else if (jwtSecurity.authTokenConverter == null) {
                 throw new InitializeException("authTokenConverter is null");
@@ -146,6 +117,7 @@ public class JwtSecurity<T> {
                 throw new InitializeException("packages is null");
             }
 
+            jwtSecurity.jwtTranslator = new JwtTranslator(this.secretKey, this.isUrlSafe);
             jwtSecurity.roleAdministrator.init(packages);
 
             return jwtSecurity;

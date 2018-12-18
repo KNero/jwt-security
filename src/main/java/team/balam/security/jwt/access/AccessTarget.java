@@ -1,7 +1,5 @@
 package team.balam.security.jwt.access;
 
-import lombok.ToString;
-
 public class AccessTarget {
     private String path;
 
@@ -43,20 +41,17 @@ public class AccessTarget {
         if (obj instanceof AccessTarget) {
             AccessTarget other = (AccessTarget) obj;
 
-            if (this.path != null && other.path != null &&
-                    this.path.toLowerCase().equals(other.path.toLowerCase())) {
+            if (this.path != null && this.path.equals(other.path)) {
                 return true;
             }
 
-            if (this.type != null && other.type != null && this.method != null && other.method != null) {
-                if (this.type.equals(other.type) && this.method.toLowerCase().equals(other.method.toLowerCase())) {
-                    return true;
-                }
+            if (this.type != null && this.method != null &&
+                    this.type.equals(other.type) && this.method.equals(other.method)) {
+                return true;
             }
 
-            if (this.httpUri != null && this.httpMethod != null && other.httpUri != null && other.httpMethod != null) {
-                return this.httpUri.equals(other.httpUri) &&
-                        this.httpMethod.toLowerCase().equals(other.httpMethod.toLowerCase());
+            if (this.httpUri != null && this.httpMethod != null) {
+                return this.httpUri.equals(other.httpUri) && this.httpMethod.equalsIgnoreCase(other.httpMethod);
             }
         }
 

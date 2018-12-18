@@ -207,5 +207,7 @@ Role.TEACHER 은 String 이고 AuthToken 의 role 이 "teacher" 인 사용자만
 String jwt = JwtSecurityFilter.generateJwtToken(userDto);
 ```
 
-   메모리에 저장된 객체를 사용하는 방법은 아래와 같습니다.
-```UserDto user = jwtSecurity.getAuthenticationInfo();```
+메모리에 저장된 객체를 사용하는 방법은 아래와 같습니다.
+```
+UserDto user = jwtSecurity.getAuthenticationInfo();
+```
