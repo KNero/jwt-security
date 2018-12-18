@@ -14,7 +14,7 @@ JWT 와 Role 을 통해서 Method, Path, Rest 서비스의 접근제어를 쉽�
 <dependency>
     <groupId>team.balam</groupId>
     <artifactId>jwt-security</artifactId>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
 </dependency>
 ```
 ## Gradle
@@ -30,7 +30,7 @@ repositories {
 ```
 ```gradle
 dependencies {
-    compile 'team.balam:jwt-security:0.0.8'
+    compile 'team.balam:jwt-security:0.0.9'
 }
 ```
 
