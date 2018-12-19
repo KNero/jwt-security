@@ -73,7 +73,7 @@ public class JwtSecurityFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         JwtSecurity.Builder<UserDto> builder = new JwtSecurity.Builder<UserDto>()
-                .setPackages("com.westudy") // Spring 의 Rest controller 들이 있는 패키지의 prefix
+                .setPackages("com.balam") // Spring 의 Rest controller 들이 있는 패키지의 prefix
                 .setSecretKey(jwtSecretKey) 
                 .setUrlSafe(false) // url safe base 64 참고
                 .addAdminRole(Role.ADMIN) // admin role 로 등록되면 모든 서비스를 호출할 수 있습니다. (다수 등록 가능)
