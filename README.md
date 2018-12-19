@@ -14,7 +14,7 @@ JWT 와 Role 을 통해서 Method, Path, Rest 서비스의 접근제어를 쉽�
 <dependency>
     <groupId>team.balam</groupId>
     <artifactId>jwt-security</artifactId>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
 </dependency>
 ```
 ## Gradle
@@ -30,7 +30,7 @@ repositories {
 ```
 ```gradle
 dependencies {
-    compile 'team.balam:jwt-security:0.0.8'
+    compile 'team.balam:jwt-security:0.0.9'
 }
 ```
 
@@ -62,7 +62,7 @@ public class JwtSecurityFilter implements Filter {
     /**
     *  jwt 발급을 위한 method
     */
-    public static String generateJwtToken(UserDto userDto) {
+    public static String generateJwt(UserDto userDto) {
         return jwtSecurity.generateToken(userDto); 
     }
     
@@ -204,7 +204,7 @@ Role.TEACHER 은 String 이고 AuthToken 의 role 이 "teacher" 인 사용자만
 
 #### 6. 인증이 완료된 사용자에게 jwt 를 발급합니다. (상단의 JwtSecurityFilter 참고)
 ```java
-String jwt = JwtSecurityFilter.generateJwtToken(userDto);
+String jwt = jwtSecurity.generateToken(userDto);
 ```
 
 메모리에 저장된 객체를 사용하는 방법은 아래와 같습니다.
