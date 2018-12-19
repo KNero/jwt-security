@@ -25,7 +25,7 @@ public class JwtSecurityTest {
 
     }
 
-    @RestAccess(uri = "/test", method = "get", role = "rest1")
+    @RestAccess(uri = "/test", method = "get", role = {"rest1", "rest2"})
     public void testGet() {
 
     }
@@ -124,6 +124,28 @@ public class JwtSecurityTest {
         Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
         Assert.assertEquals(data.get("name"), jwtData.get("name"));
         Assert.assertEquals(data.get("email"), jwtData.get("email"));
+    }
+
+    @RestAccess(uri = "/test/*/1234", method = "get", role = "rest1")
+    public void testGet2() {
+    }
+
+    @Test
+    public void test_wildcard() throws AuthenticationException, AuthorizationException, AccessInfoExistsException {
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("role", "rest1");
+        String jwt = jwtSecurity.generateToken(data);
+        jwtSecurity.authenticate(jwt, new AccessTarget("/test/{wildcard}/1234", "GET"));
+
+        try {
+            data.put("role", "rest2");
+            jwt = jwtSecurity.generateToken(data);
+            jwtSecurity.authenticate(jwt, new AccessTarget("/test/{wildcard}/1234", "GET"));
+            Assert.fail();
+        } catch (AuthorizationException e) {
+        }
     }
 
     @Test

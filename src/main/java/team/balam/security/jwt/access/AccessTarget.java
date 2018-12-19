@@ -7,7 +7,7 @@ public class AccessTarget {
     private String method;
 
     private String httpMethod;
-    private String httpUri;
+    private RestUri httpUri;
 
     public AccessTarget(String path) {
         this.path = path;
@@ -20,7 +20,7 @@ public class AccessTarget {
 
     public AccessTarget(String httpUri, String httpMethod) {
         this.httpMethod = httpMethod;
-        this.httpUri = httpUri;
+        this.httpUri = new RestUri(httpUri);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class AccessTarget {
         } else if (type != null && method != null) {
             return type.hashCode() + method.hashCode();
         } else if(httpUri != null && httpMethod != null) {
-            return httpMethod.toLowerCase().hashCode() + httpUri.hashCode();
+            return httpMethod.toLowerCase().hashCode();
         } else {
             return -1;
         }
