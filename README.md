@@ -14,7 +14,7 @@ JWT 와 Role 을 통해서 Method, Path, Rest 서비스의 접근제어를 쉽�
 <dependency>
     <groupId>team.balam</groupId>
     <artifactId>jwt-security</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
 </dependency>
 ```
 ## Gradle
@@ -30,7 +30,7 @@ repositories {
 ```
 ```gradle
 dependencies {
-    compile 'team.balam:jwt-security:0.1.0'
+    compile 'team.balam:jwt-security:0.1.1'
 }
 ```
 
@@ -205,6 +205,12 @@ Role.TEACHER 은 String 이고 AuthToken 의 role 이 "teacher" 인 사용자만
 만약 jwt 를 받은 모든 사용자가 접근 가능 하도록 하려면 **all**을 사용하면 됩니다.
 ```
 @RestAccess(uri = "/user/teacher", method = "get", all = true)
+```
+
+PathVariable 을 사용할 경우에는 아래와 같이 `*` 을 사용해 줍니다.
+`*` 는 하위를 모두 포함하지 않기 때문에 여러 두 개를 사용할 경우 `/*/*` 와 같이 각 부분에 모두 설정해야 합니다.
+```
+@RestAccess(uri = "/user/teacher/*", method = "get", all = true)
 ```
 
 #### 6. 인증이 완료된 사용자에게 jwt 를 발급합니다. (상단의 JwtSecurityFilter 참고)
