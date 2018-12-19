@@ -200,6 +200,8 @@ Role.TEACHER 은 String 이고 AuthToken 의 role 이 "teacher" 인 사용자만
 `@MethodAccess`
 `@PathAccess`
 `@RestAccess` 
+
+
 만약 jwt 를 받은 모든 사용자가 접근 가능 하도록 하려면 **all**을 사용하면 됩니다.
 ```
 @RestAccess(uri = "/user/teacher", method = "get", all = true)
