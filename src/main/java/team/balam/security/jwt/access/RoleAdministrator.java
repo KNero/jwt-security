@@ -26,19 +26,19 @@ public class RoleAdministrator {
             Set<Method> methodSet = reflections.getMethodsAnnotatedWith(PathAccess.class);
             for (Method m : methodSet) {
                 PathAccess pathAccess = m.getAnnotation(PathAccess.class);
-                addNewAccessInfo(new AccessTarget(pathAccess.path()), pathAccess.role());
+                addNewAccessInfo(new AccessTarget(pathAccess.path()), pathAccess.all(), pathAccess.role());
             }
 
             methodSet = reflections.getMethodsAnnotatedWith(MethodAccess.class);
             for (Method m: methodSet) {
                 MethodAccess methodAccess = m.getAnnotation(MethodAccess.class);
-                addNewAccessInfo(new AccessTarget(m.getDeclaringClass(), m.getName()), methodAccess.role());
+                addNewAccessInfo(new AccessTarget(m.getDeclaringClass(), m.getName()), methodAccess.all(), methodAccess.role());
             }
 
             methodSet = reflections.getMethodsAnnotatedWith(RestAccess.class);
             for (Method m: methodSet) {
                 RestAccess restAccess = m.getAnnotation(RestAccess.class);
-                addNewAccessInfo(new AccessTarget(restAccess.uri(), restAccess.method()), restAccess.role());
+                addNewAccessInfo(new AccessTarget(restAccess.uri(), restAccess.method()), restAccess.all(), restAccess.role());
             }
         }
     }
@@ -47,15 +47,20 @@ public class RoleAdministrator {
         this.adminRole.add(adminRole);
     }
 
-    private void addNewAccessInfo(AccessTarget target, String... roles) throws AccessInfoExistsException {
+    private void addNewAccessInfo(AccessTarget target, boolean isAllAccessible, String... roles) throws AccessInfoExistsException {
         for (String role : roles) {
             AccessRole accessRole = accessInfoRepository.get(target);
 
             if (accessRole == null) {
-                accessInfoRepository.put(target, new AccessRole().addRole(role));
-            } else if (!accessRole.containsRole(role)) {
+                accessRole = new AccessRole();
+                accessInfoRepository.put(target, accessRole);
+            }
+
+            if (isAllAccessible) {
+                accessRole.allAccessible();
+            } else if (!role.isEmpty() && !accessRole.containsRole(role)) {
                 accessRole.addRole(role);
-            } else {
+            } else if (accessRole.containsRole(role)) {
                 throw new AccessInfoExistsException(target.toString());
             }
         }

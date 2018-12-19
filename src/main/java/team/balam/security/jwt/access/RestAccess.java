@@ -8,7 +8,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface RestAccess {
+    String[] role() default "";
     String method();
     String uri();
-    String[] role();
+
+    /**
+     * 인증 받은 모든 사용자가 이용할 수 있는지 여부
+     */
+    boolean all() default false;
 }

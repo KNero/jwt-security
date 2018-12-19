@@ -8,6 +8,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface PathAccess {
-    String[] role();
+    String[] role() default "";
     String path();
+
+    /**
+     * 인증 받은 모든 사용자가 이용할 수 있는지 여부
+     */
+    boolean all() default false;
 }

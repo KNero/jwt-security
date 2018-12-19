@@ -30,6 +30,11 @@ public class JwtSecurityTest {
 
     }
 
+    @MethodAccess(all = true)
+    public void methodAccess2() {
+
+    }
+
     @Test
     public void test_createSecretKey() {
         Assert.assertEquals(32, JwtSecurity.create32BitesSecretKey().length());
@@ -90,6 +95,17 @@ public class JwtSecurityTest {
         } catch (AuthorizationException e) {
             //expected
         }
+    }
+
+    @Test
+    public void test_all() throws AuthenticationException, AuthorizationException, AccessInfoExistsException {
+        JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(true);
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("role", "ROLE2");
+
+        String jwt = jwtSecurity.generateToken(data);
+        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess2"));
     }
 
     @Test

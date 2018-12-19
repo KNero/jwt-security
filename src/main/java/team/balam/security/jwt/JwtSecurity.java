@@ -55,10 +55,9 @@ public class JwtSecurity<T> {
                 roleAdministrator.checkAuthorization(accessTarget, null);
             } else {
                 AuthToken authToken = jwtTranslator.parse(jwtString);
+                authResultRepository.set(objectConverter.convert(authToken));
 
                 roleAdministrator.checkAuthorization(accessTarget, authToken.getRole());
-
-                authResultRepository.set(objectConverter.convert(authToken));
             }
         } catch (JwtException e) {
             throw new AuthenticationException(e);
