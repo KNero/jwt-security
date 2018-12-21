@@ -14,7 +14,7 @@ JWT 와 Role 을 통해서 Method, Path, Rest 서비스의 접근제어를 쉽�
 <dependency>
     <groupId>team.balam</groupId>
     <artifactId>jwt-security</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2</version>
 </dependency>
 ```
 ## Gradle
@@ -30,7 +30,7 @@ repositories {
 ```
 ```gradle
 dependencies {
-    compile 'team.balam:jwt-security:0.1.1'
+    compile 'team.balam:jwt-security:0.1.2'
 }
 ```
 
@@ -77,6 +77,7 @@ public class JwtSecurityFilter implements Filter {
                 .setSecretKey(jwtSecretKey) 
                 .setUrlSafe(false) // url safe base 64 참고
                 .addAdminRole(Role.ADMIN) // admin role 로 등록되면 모든 서비스를 호출할 수 있습니다. (다수 등록 가능)
+                .addPrefix("/user") // prefix 를 통해서 하위 paht, rest uri 를 모두 검사할 수 있습니다.
                 .setAuthTokenConverter(userDto -> {
                     String role = Role.NONE;
                     if (userDto instanceof StudentDto) {
