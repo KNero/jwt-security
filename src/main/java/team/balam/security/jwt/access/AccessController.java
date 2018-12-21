@@ -6,15 +6,18 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
+import javax.accessibility.AccessibleRelation;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class RoleAdministrator {
+public class AccessController {
     private Map<AccessTarget, AccessRole> accessInfoRepository = new HashMap<>();
     private Set<String> adminRole = new HashSet<>();
+    private List<String> prefixList = new ArrayList<>();
+
+    public void addPrefix(String prefix) {
+        this.prefixList.add(prefix);
+    }
 
     public void init(String... packages) throws AccessInfoExistsException {
         for (String p : packages) {
@@ -69,6 +72,16 @@ public class RoleAdministrator {
     public void checkAuthorization(AccessTarget accessTarget, String role) throws AuthorizationException {
         if (adminRole.contains(role)) {
             return;
+        }
+
+        for (String prefix : prefixList) {
+            if (accessTarget.containsPrefix(prefix)) {
+                AccessRole accessRole = accessInfoRepository.get(accessTarget);
+
+                if (accessRole == null || !accessRole.containsRole(role)) {
+                    throw new AuthorizationException("not has access authorization. " + role + " -> " + accessTarget);
+                }
+            }
         }
 
         AccessRole accessRole = accessInfoRepository.get(accessTarget);

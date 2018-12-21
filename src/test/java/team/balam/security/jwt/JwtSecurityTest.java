@@ -232,7 +232,7 @@ public class JwtSecurityTest {
         jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
     }
 
-    private static JwtSecurity<Map<String, Object>> createJwtSecurity(boolean isUrlSafe) throws AccessInfoExistsException {
+     static JwtSecurity<Map<String, Object>> createJwtSecurity(boolean isUrlSafe) throws AccessInfoExistsException {
         return new JwtSecurity.Builder<Map<String, Object>>()
                 .setPackages("team.balam.security.jwt")
                 .setSecretKey(JwtSecurity.create32BitesSecretKey())

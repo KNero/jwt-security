@@ -4,7 +4,7 @@ import io.jsonwebtoken.JwtException;
 import team.balam.security.jwt.access.AccessInfoExistsException;
 import team.balam.security.jwt.access.AccessTarget;
 import team.balam.security.jwt.access.AuthorizationException;
-import team.balam.security.jwt.access.RoleAdministrator;
+import team.balam.security.jwt.access.AccessController;
 
 import java.util.UUID;
 import java.util.function.Function;
@@ -14,7 +14,7 @@ public class JwtSecurity<T> {
     private Function<T, AuthToken> authTokenConverter;
     private ObjectConverter<T> objectConverter;
 
-    private RoleAdministrator roleAdministrator = new RoleAdministrator();
+    private AccessController accessController = new AccessController();
 
     private ThreadLocal<T> authResultRepository = new ThreadLocal<>();
 
@@ -52,12 +52,12 @@ public class JwtSecurity<T> {
     public void authenticate(String jwtString, AccessTarget accessTarget) throws AuthenticationException, AuthorizationException {
         try {
             if (jwtString == null || jwtString.isEmpty()) {
-                roleAdministrator.checkAuthorization(accessTarget, null);
+                accessController.checkAuthorization(accessTarget, null);
             } else {
                 AuthToken authToken = jwtTranslator.parse(jwtString);
                 authResultRepository.set(objectConverter.convert(authToken));
 
-                roleAdministrator.checkAuthorization(accessTarget, authToken.getRole());
+                accessController.checkAuthorization(accessTarget, authToken.getRole());
             }
         } catch (JwtException e) {
             throw new AuthenticationException(e);
@@ -101,7 +101,15 @@ public class JwtSecurity<T> {
         }
 
         public Builder<T> addAdminRole(String adminRole) {
-            jwtSecurity.roleAdministrator.addAdminRole(adminRole);
+            jwtSecurity.accessController.addAdminRole(adminRole);
+            return this;
+        }
+
+        /**
+         * PathAccess 의 path 와 RestAccess 의 uri 에 prefix 부여하여 해당 요청을 모두 검사한다.
+         */
+        public Builder<T> addPrefix(String prefix) {
+            jwtSecurity.accessController.addPrefix(prefix);
             return this;
         }
 
@@ -117,7 +125,7 @@ public class JwtSecurity<T> {
             }
 
             jwtSecurity.jwtTranslator = new JwtTranslator(this.secretKey, this.isUrlSafe);
-            jwtSecurity.roleAdministrator.init(packages);
+            jwtSecurity.accessController.init(packages);
 
             return jwtSecurity;
         }

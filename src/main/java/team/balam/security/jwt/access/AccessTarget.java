@@ -23,6 +23,14 @@ public class AccessTarget {
         this.httpUri = new RestUri(httpUri);
     }
 
+    public boolean containsPrefix(String prefix) {
+        if (this.path != null&& this.path.startsWith(prefix)) {
+            return true;
+        }
+
+        return this.httpUri != null && httpUri.getUri().startsWith(prefix);
+    }
+
     @Override
     public int hashCode() {
         if (path != null) {

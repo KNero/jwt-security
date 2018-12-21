@@ -14,6 +14,10 @@ class RestUri {
         arrayLength = uriArray.length;
     }
 
+    public String getUri() {
+        return uri;
+    }
+
     /**
      * HashMap 에서는 비교대상이 equals 의 주체가 된다.
      * map.put(a, A);
