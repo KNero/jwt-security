@@ -6,7 +6,6 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 
-import javax.accessibility.AccessibleRelation;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -78,7 +77,9 @@ public class AccessController {
             if (accessTarget.containsPrefix(prefix)) {
                 AccessRole accessRole = accessInfoRepository.get(accessTarget);
 
-                if (accessRole == null || !accessRole.containsRole(role)) {
+                if (accessRole == null) { // RestAccess 가 없다면 admin 만 접근 가능
+                    throw new AuthorizationException("not has access authorization. jwt is empty -> " + accessTarget);
+                } else if (!accessRole.containsRole(role)) { // RestAccess 에 role 이 정해져 있다면 필터링한다.
                     throw new AuthorizationException("not has access authorization. " + role + " -> " + accessTarget);
                 }
             }

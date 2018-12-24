@@ -20,6 +20,10 @@ class AccessRole {
     }
 
     boolean containsRole(String role) {
+        if (role == null || role.isEmpty()) {
+            return false;
+        }
+
         return isAllAccessible || roles.contains(role);
     }
 }
