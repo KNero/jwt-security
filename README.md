@@ -14,7 +14,7 @@ JWT 와 Role 을 통해서 Method, Path, Rest 서비스의 접근제어를 쉽�
 <dependency>
     <groupId>team.balam</groupId>
     <artifactId>jwt-security</artifactId>
-    <version>0.1.2</version>
+    <version>0.1.4</version>
 </dependency>
 ```
 ## Gradle
@@ -30,7 +30,7 @@ repositories {
 ```
 ```gradle
 dependencies {
-    compile 'team.balam:jwt-security:0.1.2'
+    compile 'team.balam:jwt-security:0.1.4'
 }
 ```
 
@@ -126,6 +126,8 @@ setAuthTokenConverter: JwtSecurity 는 이 method 로 등록된 Function 이 반
 setObjectConverter: 요청에 포함된 jwt 를 AuthToken 으로 변한하고 이 method 에 등록된 function 을 통해서 개발자가 원하는 객체로 변환한 후 메모리에 저장합니다.
 object 로 변환 시 원하는 정보가 없는 등 유효하지 jwt 일 경우 AuthenticationException 을 던져 예외를 전파할 수 있습니다.
 
+(addPrefix 를 사용하고 Access annotation 을 정의하지 않을 경우 admin role 만 접근 가능) 
+
 #### 3. doFilter method 에 jwt 를 검사하는 로직을 추가해 줍니다.
 여기서는 http request header 에 아래와 같은 형식의 헤더를 검사하도록 구현했습니다.
 ```text
@@ -203,15 +205,21 @@ Role.TEACHER 은 String 이고 AuthToken 의 role 이 "teacher" 인 사용자만
 `@RestAccess` 
 
 
-만약 jwt 를 받은 모든 사용자가 접근 가능 하도록 하려면 `all`을 사용하면 됩니다.
+만약 jwt 를 받은 모든 사용자가 접근 가능 하도록 하려면 `allRole`을 사용하면 됩니다. (모든 Role 사용 가능)
 ```
-@RestAccess(uri = "/user/teacher", method = "get", all = true)
+@RestAccess(uri = "/user/teacher", method = "get", allRole = true)
 ```
 
 PathVariable 을 사용할 경우에는 아래와 같이 `*` 을 사용해 줍니다.
 `*` 는 하위를 모두 포함하지 않기 때문에 여러 두 개를 사용할 경우 `/*/*` 와 같이 각 부분에 모두 설정해야 합니다.
 ```
-@RestAccess(uri = "/user/teacher/*", method = "get", all = true)
+@RestAccess(uri = "/user/teacher/*", method = "get", allRole = true)
+```
+
+만약 prefix 에 의해서 접근 권한이 필요한 서비스 중 권한없이 접근 가능 하다록 예외를 두고 싶다면
+allRequest 를 설정해 준다. (모둔 요청 사용 가능)
+```
+@RestAccess(uri = "/user/teacher", method = "get", allRequest = true)
 ```
 
 #### 6. 인증이 완료된 사용자에게 jwt 를 발급합니다. (상단의 JwtSecurityFilter 참고)
