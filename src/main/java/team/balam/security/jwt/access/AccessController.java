@@ -28,19 +28,22 @@ public class AccessController {
             Set<Method> methodSet = reflections.getMethodsAnnotatedWith(PathAccess.class);
             for (Method m : methodSet) {
                 PathAccess pathAccess = m.getAnnotation(PathAccess.class);
-                addNewAccessInfo(new AccessTarget(pathAccess.path()), pathAccess.all(), pathAccess.role());
+                addNewAccessInfo(new AccessTarget(pathAccess.path()),
+                        pathAccess.allRole(), pathAccess.allRequest(), pathAccess.role());
             }
 
             methodSet = reflections.getMethodsAnnotatedWith(MethodAccess.class);
             for (Method m: methodSet) {
                 MethodAccess methodAccess = m.getAnnotation(MethodAccess.class);
-                addNewAccessInfo(new AccessTarget(m.getDeclaringClass(), m.getName()), methodAccess.all(), methodAccess.role());
+                addNewAccessInfo(new AccessTarget(m.getDeclaringClass(), m.getName()),
+                        methodAccess.allRole(), methodAccess.allRequest(), methodAccess.role());
             }
 
             methodSet = reflections.getMethodsAnnotatedWith(RestAccess.class);
             for (Method m: methodSet) {
                 RestAccess restAccess = m.getAnnotation(RestAccess.class);
-                addNewAccessInfo(new AccessTarget(restAccess.uri(), restAccess.method()), restAccess.all(), restAccess.role());
+                addNewAccessInfo(new AccessTarget(restAccess.uri(), restAccess.method()),
+                        restAccess.allRole(), restAccess.allRequest(), restAccess.role());
             }
         }
     }
@@ -49,7 +52,8 @@ public class AccessController {
         this.adminRole.add(adminRole);
     }
 
-    private void addNewAccessInfo(AccessTarget target, boolean isAllAccessible, String... roles) throws AccessInfoExistsException {
+    private void addNewAccessInfo(AccessTarget target, boolean isAllRole, boolean isAllRequest, String... roles)
+            throws AccessInfoExistsException {
         for (String role : roles) {
             AccessRole accessRole = accessInfoRepository.get(target);
 
@@ -58,8 +62,10 @@ public class AccessController {
                 accessInfoRepository.put(target, accessRole);
             }
 
-            if (isAllAccessible) {
-                accessRole.allAccessible();
+            if (isAllRole) {
+                accessRole.allRoleAccessible();
+            } else if (isAllRequest) {
+                accessRole.allRequestAccessible();
             } else if (!role.isEmpty() && !accessRole.containsRole(role)) {
                 accessRole.addRole(role);
             } else if (accessRole.containsRole(role)) {
@@ -78,7 +84,7 @@ public class AccessController {
                 AccessRole accessRole = accessInfoRepository.get(accessTarget);
 
                 if (accessRole == null) { // RestAccess 가 없다면 admin 만 접근 가능
-                    throw new AuthorizationException("not has access authorization. jwt is empty -> " + accessTarget);
+                    throw new AuthorizationException("not has access authorization. role is empty -> " + accessTarget);
                 } else if (!accessRole.containsRole(role)) { // RestAccess 에 role 이 정해져 있다면 필터링한다.
                     throw new AuthorizationException("not has access authorization. " + role + " -> " + accessTarget);
                 }

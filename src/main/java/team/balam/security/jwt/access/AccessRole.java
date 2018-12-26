@@ -7,23 +7,32 @@ import java.util.Set;
 
 @ToString
 class AccessRole {
-    private boolean isAllAccessible;
     private Set<String> roles = new HashSet<>();
+    private boolean isAllRoleAccessible;
+    private boolean isAllRequestAccessible;
 
     AccessRole addRole(String role) {
         roles.add(role);
         return this;
     }
 
-    void allAccessible() {
-        isAllAccessible = true;
+    public void allRoleAccessible() {
+        isAllRoleAccessible = true;
+    }
+
+    public void allRequestAccessible() {
+        isAllRequestAccessible = true;
     }
 
     boolean containsRole(String role) {
+        if (isAllRequestAccessible) {
+            return true;
+        }
+
         if (role == null || role.isEmpty()) {
             return false;
         }
 
-        return isAllAccessible || roles.contains(role);
+        return isAllRoleAccessible || roles.contains(role);
     }
 }

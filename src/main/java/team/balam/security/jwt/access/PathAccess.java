@@ -14,5 +14,10 @@ public @interface PathAccess {
     /**
      * 인증 받은 모든 사용자가 이용할 수 있는지 여부
      */
-    boolean all() default false;
+    boolean allRole() default false;
+
+    /**
+     * 모든 요청이 이용할 수 있는지 여부
+     */
+    boolean allRequest() default false;
 }
