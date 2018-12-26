@@ -216,8 +216,7 @@ PathVariable 을 사용할 경우에는 아래와 같이 `*` 을 사용해 줍�
 @RestAccess(uri = "/user/teacher/*", method = "get", allRole = true)
 ```
 
-만약 prefix 에 의해서 접근 권한이 필요한 서비스 중 권한없이 접근 가능 하다록 예외를 두고 싶다면
-allRequest 를 설정해 준다. (모둔 요청 사용 가능)
+만약 prefix 에 의해서 접근 권한이 필요한 서비스 중 권한없이 접근 가능 하다록 예외를 두고 싶다면 'allRequest' 를 설정해 준다. (모든 요청 사용 가능)
 ```
 @RestAccess(uri = "/user/teacher", method = "get", allRequest = true)
 ```
