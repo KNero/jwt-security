@@ -1,3 +1,5 @@
 .gradle/
 out/
 build/
+.idea
+jwt-security.iml
