@@ -1,8 +1,5 @@
 package team.balam.security.jwt.access;
 
-import lombok.ToString;
-
-@ToString
 class RestUri {
     private String uri;
     private String[] uriArray;
@@ -51,5 +48,10 @@ class RestUri {
         }
 
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return uri;
     }
 }
