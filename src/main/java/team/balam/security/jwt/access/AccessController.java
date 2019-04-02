@@ -13,9 +13,14 @@ public class AccessController {
     private Map<AccessTarget, AccessRole> accessInfoRepository = new HashMap<>();
     private Set<String> adminRole = new HashSet<>();
     private List<String> prefixList = new ArrayList<>();
+    private List<String> ignorePrefixList = new ArrayList<>();
 
     public void addPrefix(String prefix) {
         this.prefixList.add(prefix);
+    }
+
+    public void addIgnorePrefix(String prefix) {
+        ignorePrefixList.add(prefix);
     }
 
     public void init(String... packages) throws AccessInfoExistsException {
@@ -77,6 +82,12 @@ public class AccessController {
     public void checkAuthorization(AccessTarget accessTarget, String role) throws AuthorizationException {
         if (adminRole.contains(role)) {
             return;
+        }
+
+        for (String ignore: ignorePrefixList) {
+            if (accessTarget.containsPrefix(ignore)) {
+                return;
+            }
         }
 
         for (String prefix : prefixList) {

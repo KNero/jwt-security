@@ -106,6 +106,14 @@ public class JwtSecurity<T> {
         }
 
         /**
+         * 검사하지 않고 통과시킬 uri 의 prefix 를 등록한다.
+         */
+        public Builder<T> addIgnorePrefix(String prefix) {
+            jwtSecurity.accessController.addIgnorePrefix(prefix);
+            return this;
+        }
+
+        /**
          * PathAccess 의 path 와 RestAccess 의 uri 에 prefix 부여하여 해당 요청을 모두 검사한다.
          */
         public Builder<T> addPrefix(String prefix) {
