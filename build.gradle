@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'team.balam'
-version '0.1.4'
+version '0.1.5'
 
 sourceCompatibility = 1.8
 targetCompatibility=1.8
@@ -19,7 +19,7 @@ publishing {
         maven (MavenPublication) {
             groupId = 'team.balam'
             artifactId = 'jwt-security'
-            version = '0.1.4'
+            version = '0.1.5'
 
             from components.java
         }
