@@ -187,3 +187,16 @@ String jwt = jwtSecurity.generateToken(userDto);
 ```
 UserDto user = jwtSecurity.getAuthenticationInfo();
 ```
+
+#### spring web security 와 같이 사용할 경우 login success handler 에서 jwt 토큰을 발급해 주는 것이 좋습니다.
+```java
+http.authorizeRequests()
+                .antMatchers("/", "/resources/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .loginPage("/login")
+                .successHandler((request, response, authentication) -> {
+                    // jwt 발급
+                })
+```
