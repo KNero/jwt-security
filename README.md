@@ -5,7 +5,7 @@ JWT 와 Role 을 통해서 Method, Path, Rest 서비스의 접근제어를 쉽�
 ```xml
 <repositories>
     <repository>
-        <id>exof-maven</id>
+        <id>knero-mvn-repo</id>
         <url>https://github.com/KNero/repository/raw/master/maven</url>
     </repository>
 </repositories>
