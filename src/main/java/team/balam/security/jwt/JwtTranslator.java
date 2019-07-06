@@ -11,12 +11,12 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Map;
 
-public class JwtTranslator {
+class JwtTranslator {
     private Key key;
     private Encoder<byte[], String> encoder;
     private Decoder<String, byte[]> decoder;
 
-    public JwtTranslator(byte[] secretKey, boolean isUrlSafe) {
+    JwtTranslator(byte[] secretKey, boolean isUrlSafe) {
         key = Keys.hmacShaKeyFor(secretKey);
 
         if (isUrlSafe) {
@@ -28,7 +28,7 @@ public class JwtTranslator {
         }
     }
 
-    public String generate(AuthToken authToken) {
+    String generate(AuthToken authToken) {
         return Jwts.builder()
                 .base64UrlEncodeWith(encoder)
                 .signWith(key).setHeaderParam("role", authToken.getRole())
@@ -37,7 +37,7 @@ public class JwtTranslator {
     }
 
     @SuppressWarnings("unchecked")
-    public AuthToken parse(String jwtString) {
+    AuthToken parse(String jwtString) {
         Jwt jwt =  Jwts.parser().base64UrlDecodeWith(decoder).setSigningKey(key).parse(jwtString);
 
         return AuthToken.builder()

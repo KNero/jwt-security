@@ -5,6 +5,7 @@ import team.balam.security.jwt.access.AuthorizationException;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
@@ -37,7 +38,11 @@ public abstract class JwtFilter<T> implements Filter {
         try {
             jwtSecurity.authenticate(jwt, new AccessTarget(uri, method));
         } catch (AuthenticationException e) { // AuthenticationException 인증 실패
-            onFailAuthentication(request, response, e);
+            if (e.isExpired()) {
+                onExpiredToken(request, response, e);
+            } else {
+                onFailAuthentication(request, response, e);
+            }
         } catch (AuthorizationException e) { // AuthorizationException 접근 권한이 없을 경우
             onFailAuthorization(request, response, e);
         }
@@ -49,14 +54,33 @@ public abstract class JwtFilter<T> implements Filter {
      * 인증실패
      */
     protected void onFailAuthentication(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
-        throw new ServletException(e);
+        try {
+            ((HttpServletResponse) response).sendError(401, "Unauthorized");
+        } catch (IOException ie) {
+            throw new ServletException(ie);
+        }
     }
 
     /**
-     * 접근실패
+     * 토큰만료
+     */
+    protected void onExpiredToken(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
+        try {
+            ((HttpServletResponse) response).sendError(401, "Unauthorized");
+        } catch (IOException ie) {
+            throw new ServletException(ie);
+        }
+    }
+
+    /**
+     * 접근권한 없음
      */
     protected void onFailAuthorization(ServletRequest request, ServletResponse response, AuthorizationException e) throws ServletException {
-        throw new ServletException(e);
+        try {
+            ((HttpServletResponse) response).sendError(403, "Forbidden");
+        } catch (IOException ie) {
+            throw new ServletException(ie);
+        }
     }
 
     @Override
