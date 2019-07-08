@@ -14,7 +14,7 @@ JWT 와 Role 을 통해서 Method, Path, Rest 서비스의 접근제어를 쉽�
 <dependency>
     <groupId>team.balam</groupId>
     <artifactId>jwt-security</artifactId>
-    <version>0.1.5</version>
+    <version>0.1.7</version>
 </dependency>
 ```
 ## Gradle
@@ -30,7 +30,7 @@ repositories {
 ```
 ```gradle
 dependencies {
-    compile 'team.balam:jwt-security:0.1.5'
+    compile 'team.balam:jwt-security:0.1.7'
 }
 ```
 
@@ -46,68 +46,63 @@ JwtSecurity.create32BitesSecretKey()
 application.yaml
 ```yaml
 jwt:
-  secret: 13830a69d73c4945aa2de40a3664f469c9204422cdef475785fcc342ab5eee0f
+  secret-key: 13830a69d73c4945aa2de40a3664f469c9204422cdef475785fcc342ab5eee0f
 ```
 
 #### 2. ```team.balam.security.jwt.JwtSecurity```를 ```javax.servlet.Filter```의 구현체 안에 생성해 줍니다.
 ```java
 @Component
 @Slf4j
-public class JwtSecurityFilter extends JwtFilter<UserDto> {
-    private static JwtSecurity<UserDto> jwtSecurity;
-    
-    @Value("${jwt.secret}")
+public class JwtSecurityFilter extends JwtFilter<SessionUser> {    
+    @Value("${jwt.secret-key}")
     private String jwtSecretKey; // config 에 저장한 키 사용
-    
-    /**
-    *  jwt 발급을 위한 method
-    */
-    public static String generateJwt(UserDto userDto) {
-        return jwtSecurity.generateToken(userDto); 
-    }
-    
-    public static UserDto getAuthUser() {
-        return jwtSecurity.getAuthenticationInfo();
+
+    @Bean
+    public JwtSecurity<SessionUser> jwtSecurity() {
+        return jwtSecurity; // JwtFileter 에서 관리된다.
     }
     
     @Override
-    protected JwtSecurity<Map> build(JwtSecurity.Builder<UserDto> builder, FilterConfig filterConfig) 
-    throws ServletException {
-        builder.setPackages("com.balam") // Spring 의 Rest controller 들이 있는 패키지의 prefix
-                .setSecretKey(jwtSecretKey) 
+    protected JwtSecurity<SessionUser> build(JwtSecurity.Builder<SessionUser> builder, FilterConfig filterConfig) {
+        builder.setPackages("team.balam.test")  // Spring 의 Rest controller 들이 있는 패키지의 prefix
+                .setSecretKey(jwtSecretKey)
                 .setUrlSafe(false) // url safe base 64 참고
                 .addAdminRole(Role.ADMIN) // admin role 로 등록되면 모든 서비스를 호출할 수 있습니다. (다수 등록 가능)
-                .addPrefix("/user") // prefix 를 통해서 하위 paht, rest uri 를 모두 검사할 수 있습니다.
-                .setAuthTokenConverter(userDto -> {
-                    String role = Role.NONE;
-                    if (userDto instanceof StudentDto) {
-                        role = Role.STUDENT;
-                    } else if (userDto instanceof TeacherDto) {
-                        role = Role.TEACHER;
-                    }
+                .addIgnorePrefix("/api/home") // 검증 없이 통과할 수 있는 url prefix 설정
+                .addPrefix("/user") // prefix 를 통해서 하위 paht, rest uri 를 모두 검사할 수 있습니다.                
+                .setAuthTokenConverter(user -> {
+                    HashMap<String, Object> info = new HashMap<>();
+                    info.put("id", user.getId());
+                    info.put("name", user.getName());
+                    info.put("branchId", user.getBranchId());
+                    info.put("roleId", user.getUserBranchId().toString());
 
-                    HashMap<String, Object> userData = new HashMap<>();
-                    userData.put("id", userDto.getId());
-                    userData.put("email", userDto.getEmail());
-                    userData.put("image", userDto.getImage());
-                    userData.put("isTeacher", Role.TEACHER.equals(role));
-
-                    return AuthToken.builder().role(role).info(userData).build();
+                    return AuthToken.builder().role(user.getRole()).info(info).build();
                 })
                 .setObjectConverter(authToken -> {
-                    Map<String, Object> info = authToken.getInfo();
+                    Map<String, Object> authInfo = authToken.getInfo();
 
-                    UserDto userDto = new UserDto();
-                    userDto.setId((String) info.get("id"));
-                    userDto.setEmail((String) info.get("email"));
-                    userDto.setImage((String) info.get("image"));
-                    
-                    if (userDto.getId() == null) {
-                        throw new AuthenticationException();
+                    try {
+                        SessionUser info = new SessionUser(
+                                (String) authInfo.get("id"),
+                                (String) authInfo.get("name"),
+                                authToken.getRole(),
+                                (Integer) authInfo.get("branchId"),
+                                Long.parseLong(authInfo.get("roleId").toString()));
+
+                        info.validate();
+
+                        return info;
+                    } catch (Exception e) {
+                        throw new JwtException("invalid jwt. " + authInfo);
                     }
-                    
-                    return userDto;
                 });
+
+        if ("local".equals(profiles)) {
+            builder.addIgnorePrefix("/api");
+        } else {
+            builder.addPrefix("/api");
+        }
 
         return builder.build();
     }
@@ -131,9 +126,14 @@ Authorization: Bearer {jwt token}
 ```java
 실행될 때 예외를 사용하여 클라이언트에 예외를 전파할 수 있으며 예외는 아래의 메소드를 통해 전달 받습니다.
 ```java
-@Override
+    @Override
     protected void onFailAuthentication(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
         super.onFailAuthentication(request, response, e);
+    }
+    
+    @Override
+    protected void onExpiredToken(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
+        super.onExpiredToken(request, response, e);
     }
 
     @Override
@@ -185,7 +185,7 @@ String jwt = jwtSecurity.generateToken(userDto);
 
 메모리에 저장된 객체를 사용하는 방법은 아래와 같습니다.
 ```
-UserDto user = jwtSecurity.getAuthenticationInfo();
+SessionUser user = jwtSecurity.getAuthenticationInfo();
 ```
 
 #### spring web security 와 같이 사용할 경우 login success handler 에서 jwt 토큰을 발급해 주는 것이 좋습니다.
