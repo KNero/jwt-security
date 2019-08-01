@@ -11,7 +11,7 @@ class RestUri {
         arrayLength = uriArray.length;
     }
 
-    public String getUri() {
+    String getUri() {
         return uri;
     }
 
@@ -33,6 +33,16 @@ class RestUri {
         }
 
         return true;
+    }
+
+    boolean isWildcard() {
+        for (int i = 0; i < arrayLength; ++i) {
+            if ("*".equals(uriArray[i])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override

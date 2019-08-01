@@ -10,7 +10,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class AccessController {
-    private Map<AccessTarget, AccessRole> accessInfoRepository = new HashMap<>();
+    private Map<AccessTarget, AccessRole> generalTargetRepository = new HashMap<>();
+    private Map<AccessTarget, AccessRole> wildcardTargetRepository = new HashMap<>();
+
     private Set<String> adminRole = new HashSet<>();
     private List<String> prefixList = new ArrayList<>();
     private List<String> ignorePrefixList = new ArrayList<>();
@@ -60,11 +62,22 @@ public class AccessController {
     private void addNewAccessInfo(AccessTarget target, boolean isAllRole, boolean isAllRequest, String... roles)
             throws AccessInfoExistsException {
         for (String role : roles) {
-            AccessRole accessRole = accessInfoRepository.get(target);
+            AccessRole accessRole;
+
+            if (target.isWildcard()) {
+                accessRole = wildcardTargetRepository.get(target);
+            } else {
+                accessRole = generalTargetRepository.get(target);
+            }
 
             if (accessRole == null) {
                 accessRole = new AccessRole();
-                accessInfoRepository.put(target, accessRole);
+
+                if (target.isWildcard()) {
+                    wildcardTargetRepository.put(target, accessRole);
+                } else {
+                    generalTargetRepository.put(target, accessRole);
+                }
             }
 
             if (isAllRole) {
@@ -74,7 +87,7 @@ public class AccessController {
             } else if (!role.isEmpty() && !accessRole.containsRole(role)) {
                 accessRole.addRole(role);
             } else if (accessRole.containsRole(role)) {
-                throw new AccessInfoExistsException(target.toString());
+                throw new AccessInfoExistsException(target + " / " + accessRole);
             }
         }
     }
@@ -92,7 +105,7 @@ public class AccessController {
 
         for (String prefix : prefixList) {
             if (accessTarget.containsPrefix(prefix)) {
-                AccessRole accessRole = accessInfoRepository.get(accessTarget);
+                AccessRole accessRole = getAccessRole(accessTarget);
 
                 if (accessRole == null) { // RestAccess 가 없다면 admin 만 접근 가능
                     throw new AuthorizationException("not has access authorization. role is empty -> " + accessTarget);
@@ -102,9 +115,19 @@ public class AccessController {
             }
         }
 
-        AccessRole accessRole = accessInfoRepository.get(accessTarget);
+        AccessRole accessRole = getAccessRole(accessTarget);
         if (accessRole != null && !accessRole.containsRole(role)) {
             throw new AuthorizationException("not has access authorization. " + role + " -> " + accessTarget);
         }
+    }
+
+    private AccessRole getAccessRole(AccessTarget accessTarget) {
+        AccessRole role = generalTargetRepository.get(accessTarget);
+
+        if (role == null) {
+            role = wildcardTargetRepository.get(accessTarget);
+        }
+
+        return role;
     }
 }

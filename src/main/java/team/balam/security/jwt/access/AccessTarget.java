@@ -31,6 +31,10 @@ public class AccessTarget {
         return this.httpUri != null && httpUri.getUri().startsWith(prefix);
     }
 
+    public boolean isWildcard() {
+        return httpUri != null && httpUri.isWildcard();
+    }
+
     @Override
     public int hashCode() {
         if (path != null) {
