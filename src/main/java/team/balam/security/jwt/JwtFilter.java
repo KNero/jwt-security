@@ -39,21 +39,19 @@ public abstract class JwtFilter<T> implements Filter {
             jwtSecurity.authenticate(jwt, new AccessTarget(uri, method));
         } catch (AuthenticationException e) { // AuthenticationException 인증 실패
             if (e.isExpired()) {
-                onExpiredToken(request, response, e);
+                onExpiredToken(request, response, chain, e);
             } else {
-                onFailAuthentication(request, response, e);
+                onFailAuthentication(request, response, chain, e);
             }
         } catch (AuthorizationException e) { // AuthorizationException 접근 권한이 없을 경우
-            onFailAuthorization(request, response, e);
+            onFailAuthorization(request, response, chain, e);
         }
-
-        chain.doFilter(request, response);
     }
 
     /**
      * 인증실패
      */
-    protected void onFailAuthentication(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
+    protected void onFailAuthentication(ServletRequest request, ServletResponse response, FilterChain chain, AuthenticationException e) throws ServletException {
         try {
             ((HttpServletResponse) response).sendError(401, "Unauthorized");
         } catch (IOException ie) {
@@ -64,7 +62,7 @@ public abstract class JwtFilter<T> implements Filter {
     /**
      * 토큰만료
      */
-    protected void onExpiredToken(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
+    protected void onExpiredToken(ServletRequest request, ServletResponse response, FilterChain chain, AuthenticationException e) throws ServletException {
         try {
             ((HttpServletResponse) response).sendError(401, "Unauthorized");
         } catch (IOException ie) {
@@ -75,7 +73,7 @@ public abstract class JwtFilter<T> implements Filter {
     /**
      * 접근권한 없음
      */
-    protected void onFailAuthorization(ServletRequest request, ServletResponse response, AuthorizationException e) throws ServletException {
+    protected void onFailAuthorization(ServletRequest request, ServletResponse response, FilterChain chain, AuthorizationException e) throws ServletException {
         try {
             ((HttpServletResponse) response).sendError(403, "Forbidden");
         } catch (IOException ie) {
