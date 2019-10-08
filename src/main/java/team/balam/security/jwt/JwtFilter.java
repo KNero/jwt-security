@@ -37,6 +37,8 @@ public abstract class JwtFilter<T> implements Filter {
 
         try {
             jwtSecurity.authenticate(jwt, new AccessTarget(uri, method));
+
+            chain.doFilter(request, response);
         } catch (AuthenticationException e) { // AuthenticationException 인증 실패
             if (e.isExpired()) {
                 onExpiredToken(request, response, chain, e);
