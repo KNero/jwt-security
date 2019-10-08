@@ -123,7 +123,6 @@ object 로 변환 시 원하는 정보가 없는 등 유효하지 jwt 일 경우
 ```text
 Authorization: Bearer {jwt token}
 ```
-```java
 실행될 때 예외를 사용하여 클라이언트에 예외를 전파할 수 있으며 예외는 아래의 메소드를 통해 전달 받습니다.
 ```java
     @Override
