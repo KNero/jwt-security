@@ -167,7 +167,7 @@ Role.TEACHER 은 String 이고 AuthToken 의 role 이 "teacher" 인 사용자만
 ```
 
 PathVariable 을 사용할 경우에는 아래와 같이 `*` 을 사용해 줍니다.
-`*` 는 하위를 모두 포함하지 않기 때문에 여러 두 개를 사용할 경우 `/*/*` 와 같이 각 부분에 모두 설정해야 합니다.
+`*` 는 하위를 모두 포함하지 않기 때문에 여러개를 사용할 경우 `/*/*` 와 같이 각 부분에 모두 설정해야 합니다.
 ```
 @RestAccess(uri = "/user/teacher/*", method = "get", allRole = true)
 ```
