@@ -34,6 +34,21 @@ dependencies {
 }
 ```
 
+### [Registered Claim](https://tools.ietf.org/html/rfc7519#section-4.1)
+AuthToken 을 생성할 때 registered claim 을 포함할 수 있습니다.
+```java
+AuthToken authToken = AuthToken.builder()
+                .role("role1")
+                .info(data)
+                .subject("subject")
+                .audience("audience")
+                .issuer("issuer")
+                .expirationTime(new Date(System.currentTimeMillis() + 100000))
+                .notBefore(new Date())
+                .jwtId(UUID.randomUUID().toString())
+                .build();
+```
+
 ## with spring boot
 #### 1. ```team.balam.security.jwt.JwtSecurity``` 의 아래 메소드를 통해서 랜덤 키를 생성하고 config 파일에 저장합니다.
 
@@ -125,21 +140,38 @@ Authorization: Bearer {jwt token}
 ```
 실행될 때 예외를 사용하여 클라이언트에 예외를 전파할 수 있으며 예외는 아래의 메소드를 통해 전달 받습니다.
 ```java
-    @Override
-    protected void onFailAuthentication(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
-        super.onFailAuthentication(request, response, e);
-    }
+    /**
+         * 인증실패
+         */
+        protected void onFailAuthentication(ServletRequest request, ServletResponse response, FilterChain chain, AuthenticationException e) throws ServletException {
+            try {
+                ((HttpServletResponse) response).sendError(401, "Unauthorized");
+            } catch (IOException ie) {
+                throw new ServletException(ie);
+            }
+        }
     
-    @Override
-    protected void onExpiredToken(ServletRequest request, ServletResponse response, AuthenticationException e) throws ServletException {
-        super.onExpiredToken(request, response, e);
-    }
-
-    @Override
-    protected void onFailAuthorization(ServletRequest request, ServletResponse response, AuthorizationException e) throws ServletException {
-        log.error("Unauthorized request. {}", jwtSecurity.getAuthenticationInfo());
-        super.onFailAuthorization(request, response, e);
-    }
+        /**
+         * 토큰만료
+         */
+        protected void onExpiredToken(ServletRequest request, ServletResponse response, FilterChain chain, AuthenticationException e) throws ServletException {
+            try {
+                ((HttpServletResponse) response).sendError(401, "Unauthorized");
+            } catch (IOException ie) {
+                throw new ServletException(ie);
+            }
+        }
+    
+        /**
+         * 접근권한 없음
+         */
+        protected void onFailAuthorization(ServletRequest request, ServletResponse response, FilterChain chain, AuthorizationException e) throws ServletException {
+            try {
+                ((HttpServletResponse) response).sendError(403, "Forbidden");
+            } catch (IOException ie) {
+                throw new ServletException(ie);
+            }
+        }
 ```
 #### 4. RestAccess annotation 을 통해서 원하는 제어를 설정해 줍니다.
 ```java
