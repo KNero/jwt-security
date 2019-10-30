@@ -85,7 +85,7 @@ public class JwtSecurityFilter extends JwtFilter<SessionUser> {
                 .addAdminRole(Role.ADMIN) // admin role 로 등록되면 모든 서비스를 호출할 수 있습니다. (다수 등록 가능)
                 .addIgnorePrefix("/api/home") // 검증 없이 통과할 수 있는 url prefix 설정
                 .addPrefix("/user") // prefix 를 통해서 하위 paht, rest uri 를 모두 검사할 수 있습니다.   
-                .setDefaultTokenParser() // 기본 token parser 를 사             
+                .setDefaultTokenParser() // 기본 token parser 를 사용
                 .setAuthTokenConverter(user -> {
                     HashMap<String, Object> info = new HashMap<>();
                     info.put("id", user.getId());
