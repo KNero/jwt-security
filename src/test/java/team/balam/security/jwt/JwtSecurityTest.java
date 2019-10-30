@@ -35,6 +35,8 @@ public class JwtSecurityTest {
     public void methodAccess3() {
     }
 
+    private static final String TOKEN_PREFIX = "Bearer ";
+
     @Test
     public void test_createSecretKey() {
         Assert.assertEquals(32, JwtSecurity.create32BitesSecretKey().length());
@@ -58,7 +60,7 @@ public class JwtSecurityTest {
 
         data.put("role", "ROLE1");
         String jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access1"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/path/access1"));
 
         Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
         Assert.assertEquals(data.get("name"), jwtData.get("name"));
@@ -67,7 +69,7 @@ public class JwtSecurityTest {
         try {
             data.put("role", "ROLE2");
             jwt = jwtSecurity.generateToken(data);
-            jwtSecurity.authenticate(jwt, new AccessTarget("/path/access1"));
+            jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/path/access1"));
             Assert.fail(); // ROLE2 는 접근할 수 없는 롤이기 때문에 AuthorizationException 발생하여 이 부분이 실행되지 않음.
         } catch (AuthorizationException e) {
             // expected
@@ -83,7 +85,7 @@ public class JwtSecurityTest {
 
         data.put("role", "METHOD1");
         String jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
 
         try {
             data.put("role", "METHOD2");
@@ -103,16 +105,16 @@ public class JwtSecurityTest {
 
         data.put("role", "ROLE2");
         String jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access2"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/path/access2"));
 
         data.put("role", "ROLE3");
         jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access2"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/path/access2"));
 
         try {
             data.put("role", "ROLE1");
             jwt = jwtSecurity.generateToken(data);
-            jwtSecurity.authenticate(jwt, new AccessTarget("/path/access2"));
+            jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/path/access2"));
 
             Assert.fail();
         } catch (AuthorizationException e) {
@@ -130,7 +132,7 @@ public class JwtSecurityTest {
 
         data.put("role", "rest1");
         String jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget("/test", "GET"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/test", "GET"));
 
         Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
         Assert.assertEquals(data.get("name"), jwtData.get("name"));
@@ -138,12 +140,12 @@ public class JwtSecurityTest {
 
         data.put("role", "rest2");
         jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget("/test", "GET"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/test", "GET"));
 
         try {
             data.put("role", "rest3");
             jwt = jwtSecurity.generateToken(data);
-            jwtSecurity.authenticate(jwt, new AccessTarget("/test", "GET"));
+            jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/test", "GET"));
             Assert.fail(); // rest3 롤이 없기 때문에 AuthorizationException 발생
         } catch (AuthorizationException e) {
             // expected
@@ -161,7 +163,7 @@ public class JwtSecurityTest {
 
         String jwt = jwtSecurity.generateToken(data);
 
-        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access1"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/path/access1"));
 
         Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
         Assert.assertEquals(data.get("name"), jwtData.get("name"));
@@ -179,7 +181,7 @@ public class JwtSecurityTest {
 
         String jwt = jwtSecurity.generateToken(data);
 
-        jwtSecurity.authenticate(jwt, new AccessTarget("/path/access1"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget("/path/access1"));
 
         Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
         Assert.assertEquals(data.get("name"), jwtData.get("name"));
@@ -197,7 +199,7 @@ public class JwtSecurityTest {
 
         String jwt = jwtSecurity.generateToken(data);
 
-        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
 
         Map<String, Object> jwtData = jwtSecurity.getAuthenticationInfo();
         Assert.assertEquals(data.get("name"), jwtData.get("name"));
@@ -227,11 +229,11 @@ public class JwtSecurityTest {
         JwtSecurity<Map<String, Object>> jwtSecurity = createJwtSecurity(false);
         String jwt = jwtSecurity.generateToken(data);
 
-        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
 
         String header = "{\"role\":\"METHOD 2222\",\"alg\":\"HS256\"}";
         jwt = Base64.getEncoder().encodeToString(header.getBytes()) + "." + jwt.split("\\.")[1] + "." + jwt.split("\\.")[2];
-        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess1"));
     }
 
     @Test
@@ -249,13 +251,14 @@ public class JwtSecurityTest {
         data.put("role", "ROLE2");
 
         String jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess2"));
+        jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess2"));
     }
 
      static JwtSecurity<Map<String, Object>> createJwtSecurity(boolean isUrlSafe) throws AccessInfoExistsException {
         return new JwtSecurity.Builder<Map<String, Object>>()
                 .setPackages("team.balam.security.jwt")
                 .setSecretKey(JwtSecurity.create32BitesSecretKey())
+                .setDefaultTokenParser()
                 .addAdminRole("ADMIN")
                 .setAuthTokenConverter(data -> {
                     Date date = new Date(System.currentTimeMillis() + 10000);
@@ -275,6 +278,7 @@ public class JwtSecurityTest {
                 .setPackages("team.balam.security.jwt")
                 .setSecretKey(JwtSecurity.create32BitesSecretKey())
                 .addAdminRole("ADMIN")
+                .setDefaultTokenParser()
                 .setAuthTokenConverter(data -> {
                     Date date = new Date(System.currentTimeMillis() + 1);
                     return AuthToken.builder()
@@ -291,7 +295,7 @@ public class JwtSecurityTest {
         String jwt = jwtSecurity.generateToken(data);
 
         try {
-            jwtSecurity.authenticate(jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess2"));
+            jwtSecurity.authenticate(TOKEN_PREFIX + jwt, new AccessTarget(JwtSecurityTest.class, "methodAccess2"));
             Assert.fail();
         } catch (AuthenticationException e) {
             Assert.assertTrue(e.isExpired());

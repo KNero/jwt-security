@@ -84,7 +84,8 @@ public class JwtSecurityFilter extends JwtFilter<SessionUser> {
                 .setUrlSafe(false) // url safe base 64 참고
                 .addAdminRole(Role.ADMIN) // admin role 로 등록되면 모든 서비스를 호출할 수 있습니다. (다수 등록 가능)
                 .addIgnorePrefix("/api/home") // 검증 없이 통과할 수 있는 url prefix 설정
-                .addPrefix("/user") // prefix 를 통해서 하위 paht, rest uri 를 모두 검사할 수 있습니다.                
+                .addPrefix("/user") // prefix 를 통해서 하위 paht, rest uri 를 모두 검사할 수 있습니다.   
+                .setDefaultTokenParser() // 기본 token parser 를 사             
                 .setAuthTokenConverter(user -> {
                     HashMap<String, Object> info = new HashMap<>();
                     info.put("id", user.getId());
@@ -134,7 +135,9 @@ object 로 변환 시 원하는 정보가 없는 등 유효하지 jwt 일 경우
 (addPrefix 를 사용하고 Access annotation 을 정의하지 않을 경우 admin role 만 접근 가능) 
 
 #### 3. jwt 요청 및 예외 처리
-여기서는 http request header 에 아래와 같은 형식의 헤더를 추가하여 요청해야 합니다.
+여기서는 http request header 에 아래와 같은 형식의 헤더를 추가하여 요청해야 합니다.용
+(`team.balam.security.jwt.DefaultTokenParser`를 기본으로 사용합니다. 만약 다른 형태로 jwt 를 전달하기를 원한다면
+bulder 의 setTokenParser 를 통해 설정하면 됩니다.)
 ```text
 Authorization: Bearer {jwt token}
 ```

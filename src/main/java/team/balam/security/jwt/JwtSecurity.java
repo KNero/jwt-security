@@ -14,6 +14,9 @@ public class JwtSecurity<T> {
     private Function<T, AuthToken> authTokenConverter;
     private ObjectConverter<T> objectConverter;
 
+    private String headerName;
+    private Function<String, String> tokenParser;
+
     private AccessController accessController = new AccessController();
 
     private ThreadLocal<T> authResultRepository = new ThreadLocal<>();
@@ -43,14 +46,20 @@ public class JwtSecurity<T> {
         return authResultRepository.get();
     }
 
+    public String getHeaderName() {
+        return headerName;
+    }
+
     public String generateToken(T t) {
         AuthToken authToken = authTokenConverter.apply(t);
         return jwtTranslator.generate(authToken);
     }
 
     @SuppressWarnings("unchecked")
-    public void authenticate(String jwtString, AccessTarget accessTarget) throws AuthenticationException, AuthorizationException {
+    public void authenticate(String token, AccessTarget accessTarget) throws AuthenticationException, AuthorizationException {
         try {
+            String jwtString = tokenParser.apply(token);
+
             if (jwtString == null || jwtString.isEmpty()) {
                 accessController.checkAuthorization(accessTarget, null);
             } else {
@@ -106,6 +115,20 @@ public class JwtSecurity<T> {
         }
 
         /**
+         * {@link DefaultTokenParser}
+         * @return this
+         */
+        public Builder<T> setDefaultTokenParser() {
+            return setTokenParser(DefaultTokenParser.AUTHORIZATION_HEADER, new DefaultTokenParser());
+        }
+
+        public Builder<T> setTokenParser(String headerName, Function<String, String> tokenParser) {
+            jwtSecurity.headerName = headerName;
+            jwtSecurity.tokenParser = tokenParser;
+            return this;
+        }
+
+        /**
          * 검사하지 않고 통과시킬 uri 의 prefix 를 등록한다.
          */
         public Builder<T> addIgnorePrefix(String prefix) {
@@ -130,6 +153,8 @@ public class JwtSecurity<T> {
                 throw new InitializeException("objectConverter is null");
             } else if (this.packages == null || this.packages.length == 0) {
                 throw new InitializeException("packages is null");
+            } else if (jwtSecurity.tokenParser == null) {
+                throw new InitializeException("tokenParser is null");
             }
 
             jwtSecurity.jwtTranslator = new JwtTranslator(this.secretKey, this.isUrlSafe);

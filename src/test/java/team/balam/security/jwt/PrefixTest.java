@@ -25,6 +25,7 @@ public class PrefixTest {
                 .setSecretKey(JwtSecurity.create32BitesSecretKey())
                 .addAdminRole("ADMIN")
                 .addPrefix("/prefix1")
+                .setDefaultTokenParser()
                 .setAuthTokenConverter(data -> {
                     Date date = new Date(System.currentTimeMillis() + 10000);
                     return AuthToken.builder()
@@ -44,7 +45,7 @@ public class PrefixTest {
         } catch (AuthenticationException | AuthorizationException e) {
         }
 
-        jwtSecurity.authenticate(jwt, new AccessTarget("/prefix1/test2", "get"));
+        jwtSecurity.authenticate("Bearer " + jwt, new AccessTarget("/prefix1/test2", "get"));
 
         try {
             // jwt 가 없을 경우 통과할 수 없다.

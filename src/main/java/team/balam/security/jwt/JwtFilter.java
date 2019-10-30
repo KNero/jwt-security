@@ -25,15 +25,7 @@ public abstract class JwtFilter<T> implements Filter {
 
         String uri = httpServletRequest.getRequestURI();
         String method = httpServletRequest.getMethod();
-        String jwt = null;
-
-        String authorization = httpServletRequest.getHeader("Authorization");
-        if (authorization != null) {
-            String[] authInfo = authorization.split(" ");
-            if (authInfo.length == 2 && "Bearer".equals(authInfo[0])) {
-                jwt = authInfo[1];
-            }
-        }
+        String jwt = httpServletRequest.getHeader(jwtSecurity.getHeaderName());
 
         try {
             jwtSecurity.authenticate(jwt, new AccessTarget(uri, method));

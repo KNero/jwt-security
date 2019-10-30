@@ -31,16 +31,16 @@ public class WildcardTest {
         Map<String, Object> data = new HashMap<>();
         data.put("role", "rest1");
         String jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget("/test/wildcard-1/1234", "GET"));
+        jwtSecurity.authenticate("Bearer " + jwt, new AccessTarget("/test/wildcard-1/1234", "GET"));
 
         data.put("role", "rest3");
         jwt = jwtSecurity.generateToken(data);
-        jwtSecurity.authenticate(jwt, new AccessTarget("/test/wildcard-2/1234", "GET"));
+        jwtSecurity.authenticate("Bearer " + jwt, new AccessTarget("/test/wildcard-2/1234", "GET"));
 
         try {
             data.put("role", "rest2");
             jwt = jwtSecurity.generateToken(data);
-            jwtSecurity.authenticate(jwt, new AccessTarget("/test/wildcard-3/1234", "GET"));
+            jwtSecurity.authenticate("Bearer " + jwt, new AccessTarget("/test/wildcard-3/1234", "GET"));
             Assert.fail();
         } catch (AuthorizationException e) {
             // rest2 는 접근 불가
@@ -56,7 +56,7 @@ public class WildcardTest {
         try {
             data.put("role", "rest2");
             String jwt = jwtSecurity.generateToken(data);
-            jwtSecurity.authenticate(jwt, new AccessTarget("/api/branch/lecture/progress", "GET"));
+            jwtSecurity.authenticate("Bearer " + jwt, new AccessTarget("/api/branch/lecture/progress", "GET"));
         } catch (AuthorizationException e) {
             // rest2 는 접근 불가
         }
@@ -64,11 +64,11 @@ public class WildcardTest {
         data.put("role", "rest2");
         String jwt = jwtSecurity.generateToken(data);
         // rest2 가능
-        jwtSecurity.authenticate(jwt, new AccessTarget("/api/branch/lecture/wildcard", "GET"));
+        jwtSecurity.authenticate("Bearer " + jwt, new AccessTarget("/api/branch/lecture/wildcard", "GET"));
 
         data.put("role", "rest4");
         jwt = jwtSecurity.generateToken(data);
         // rest1, rest2 가능
-        jwtSecurity.authenticate(jwt, new AccessTarget("/api/branch/lecture/progress", "GET"));
+        jwtSecurity.authenticate("Bearer " + jwt, new AccessTarget("/api/branch/lecture/progress", "GET"));
     }
 }
